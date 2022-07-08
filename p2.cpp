@@ -25,16 +25,20 @@ class Markers
 public:
 	string color_str;
 	Scalar left, right;
-	//Point coordinates;
-	Markers();
+	vector<vector<Point>>contours;
+	RotatedRect rot_rect;
+	Point center;
+	Mat mask;
+	string coordinates;
+	
 	Markers(string color_str, Scalar left, Scalar right);
-	Mat detect(Mat picture, Scalar left, Scalar right);
-	void find(Mat mask);
-	void draw(Mat background, vector<vector<Point>>contours);
-	Point min(vector<vector<Point>>contours);
-	void point(Mat background, Point center);
-	void text(Point center, Mat background);
-	Mat show(Mat background);
+	void detect(Mat picture, Scalar left, Scalar right);
+	void find();
+	void draw(Mat background);
+	void min();
+	void point(Mat background);
+	void text(Mat background);
+	void show(Mat background);
 };
 
 Markers::Markers(string color_str, Scalar left, Scalar right)
@@ -44,75 +48,77 @@ Markers::Markers(string color_str, Scalar left, Scalar right)
 	this->right = right;
 }
 
-Mat Markers::detect(Mat picture, Scalar left, Scalar right)
+void Markers::detect(Mat picture, Scalar left, Scalar right)
 {
-	Mat mask;
 	inRange(picture, left, right, mask);
-	return mask;
 }
 
-void Markers::find(Mat mask)
+void Markers::find()
 {
-	vector<vector<Point>>contours;
-	return findContours(mask, contours, RETR_EXTERNAL, CHAIN_APPROX_SIMPLE);
+	findContours(mask, contours, RETR_EXTERNAL, CHAIN_APPROX_SIMPLE);
 }
 
-void Markers::draw(Mat background, vector<vector<Point>>contours)
+void Markers::draw(Mat background)
 {
-	return drawContours(background, contours, -1, (0, 255, 0), 2);
+	drawContours(background, contours, -1, (0, 255, 0), 2);
 }
 
-Point Markers::min(vector<vector<Point>>contours)
+void Markers::min()
 {
-	RotatedRect rot_rect1 = minAreaRect(contours[0]);
-	Point center = rot_rect1.center;
+	rot_rect = minAreaRect(contours[0]);
+	center = rot_rect.center;
 }
 
-void Markers::point(Mat background, Point center)
+void Markers::point(Mat background)
 {
-	return circle(background, center, 1, (0, 255, 0), 2);
+	circle(background, center, 1, (0, 255, 0), 2);
 }
 
-void Markers::text(Point center, Mat background)
+void Markers::text(Mat background)
 {
-	string coordinates;
 	coordinates = to_string(center.x) + "," + to_string(center.y);
-	return putText(background, coordinates, Point(center.x + 5, center.y - 10), FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0));
+	putText(background, coordinates, Point(center.x + 5, center.y - 10), FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0));
 }
 
-Mat Markers::show(Mat background)
+void Markers::show(Mat background)
 {
-	imshow("background", background);
-	return background;
+	return imshow("background", background);
 }
 
 int main()
 {
 	map<int, Markers> dict;
 	map<int, Markers>::iterator it = dict.begin();
-	dict.insert(make_pair(1, Markers("red", red_left, red_right)));
-	dict.insert(make_pair(2, Markers("yellow", yellow_left, yellow_right)));
-	dict.insert(make_pair(3, Markers("green", green_left, green_right)));
-	dict.insert(make_pair(4, Markers("blue", blue_left, blue_right)));
-	int flower[4] = { 1,2,3,4 };
-	string coordinates;
-	vector<vector<Point>>contours;
-	// Read the image file
+
+	Markers R("red", red_left, red_right);
+	Markers Y("yellow", yellow_left, yellow_right);
+	Markers G("green", green_left, green_right);
+	Markers B("blue", blue_left, blue_right);
+	dict.insert(make_pair(1, R));
+	dict.insert(make_pair(2, Y));
+	dict.insert(make_pair(3, G));
+	dict.insert(make_pair(4, B));
 	Mat picture = imread("C:/Program Files (x86)/picture.jpg");
 	Mat background;
 	picture.copyTo(background);
 	cvtColor(picture, picture, COLOR_BGR2HSV);
-	Mat mask;
-	Markers M;
-	Point center;
-	for (it; it != dict.end(); it++)
-	{
-		M.detect(picture, it->second.left, it->second.right);
-		M.find(mask);
-		M.draw(background, contours);
-		M.min(contours);
-		M.point(background, center);
-		M.text(center, background);
-		M.show(background);
-	}
+	//for (it; it != dict.end(); it++)
+	//{
+		(*it).second.detect(picture, (*it).second.left, (*it).second.right);
+		(*it).second.find();
+		(*it).second.draw(background);
+		(*it).second.min();
+		(*it).second.point(background);
+		(*it).second.text(background);
+		(*it).second.show(background);
+
+		/*R.detect(picture, red_left, red_right);
+		R.find();
+		R.draw(background);
+		R.min();
+		R.point(background);
+		R.text(background);
+		R.show(background);*/
+	//}
+	waitKey(0);
 }

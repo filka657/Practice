@@ -87,38 +87,24 @@ void Markers::show(Mat background)
 
 int main()
 {
-	map<int, Markers> dict;
-	map<int, Markers>::iterator it = dict.begin();
-
 	Markers R("red", red_left, red_right);
 	Markers Y("yellow", yellow_left, yellow_right);
 	Markers G("green", green_left, green_right);
 	Markers B("blue", blue_left, blue_right);
-	dict.insert(make_pair(1, R));
-	dict.insert(make_pair(2, Y));
-	dict.insert(make_pair(3, G));
-	dict.insert(make_pair(4, B));
+	Markers mark[4] = { R, Y, G, B };
 	Mat picture = imread("C:/Program Files (x86)/picture.jpg");
 	Mat background;
 	picture.copyTo(background);
 	cvtColor(picture, picture, COLOR_BGR2HSV);
-	//for (it; it != dict.end(); it++)
-	//{
-		(*it).second.detect(picture, (*it).second.left, (*it).second.right);
-		(*it).second.find();
-		(*it).second.draw(background);
-		(*it).second.min();
-		(*it).second.point(background);
-		(*it).second.text(background);
-		(*it).second.show(background);
-
-		/*R.detect(picture, red_left, red_right);
-		R.find();
-		R.draw(background);
-		R.min();
-		R.point(background);
-		R.text(background);
-		R.show(background);*/
-	//}
+	for (int i = 0; i < 4; i++)
+	{
+		mark[i].detect(picture, mark[i].left, mark[i].right);
+		mark[i].find();
+		mark[i].draw(background);
+		mark[i].min();
+		mark[i].point(background);
+		mark[i].text(background);
+		mark[i].show(background);
+	}
 	waitKey(0);
 }
